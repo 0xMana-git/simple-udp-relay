@@ -78,8 +78,8 @@ void start_on_port(int port) {
        
     // Filling server information 
     servaddr.sin_family    = AF_INET; // IPv4 
-    //servaddr.sin_addr.s_addr = INADDR_ANY; 
-    servaddr.sin_addr.s_addr = inet_addr("127.0.0.2");
+    servaddr.sin_addr.s_addr = INADDR_ANY; 
+    //servaddr.sin_addr.s_addr = inet_addr("127.0.0.2");
     servaddr.sin_port = htons(port); 
        
     // Bind the socket with the server address 
@@ -105,17 +105,22 @@ void start_on_port(int port) {
         //TODO: add authentication for client
 
         //add to list of peers
-        bool can_bind = add_peer(cliaddr.sin_port, cliaddr);
+        bool can_bind = false;
+        bool attempting_bind = (port == cliaddr.sin_port);
+        if(attempting_bind) 
+            can_bind = add_peer(cliaddr.sin_port, cliaddr);
+        if(can_bind)
+            std::cout << "New client " << sockaddr_to_hostport(cliaddr) << " bound to " << port << std::endl;
 
         //If src = dst, reply by setting first byte
-        if(port == cliaddr.sin_port) {
+        if(attempting_bind) {
             //success = 55, fail = ff
             if(can_bind)
                 packet_buffer[0] = 0x55;
             else
                 packet_buffer[0] = 0xff;
         }
-        if(!can_bind && port == cliaddr.sin_port) {
+        if(!can_bind && attempting_bind) {
             //echo back to the client
             sendto(sockfd, &packet_buffer, n, 0, (sockaddr*)&cliaddr, sizeof(cliaddr));
             continue;
