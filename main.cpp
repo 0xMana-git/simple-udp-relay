@@ -57,10 +57,6 @@ const sockaddr_in* find_peer(uint64 id) {
 
 
 
-
-
-
-
 void start_on_port(int port) {
     int sockfd; 
     char packet_buffer[buf_size];
@@ -109,8 +105,8 @@ void start_on_port(int port) {
         bool can_bind = false;
         bool attempting_bind = (port == client_port);
         if(attempting_bind) 
-            
             can_bind = add_peer(client_port, cliaddr);
+        
         if(can_bind)
             std::cout << "New client " << sockaddr_to_hostport(cliaddr) << " bound to " << port << std::endl;
 
