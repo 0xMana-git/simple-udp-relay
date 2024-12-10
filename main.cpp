@@ -20,7 +20,6 @@ constexpr size_t buf_size = 65536;
 //udp port
 constexpr int RELAY_PORT = 18720;
 constexpr int RELAYS_SIZE = 32;
-inline static char packet_buffer[buf_size]; 
 
 std::string addr_to_string(const in_addr& addr) {
     char client_str[128];
@@ -64,6 +63,7 @@ const sockaddr_in* find_peer(uint64 id) {
 
 void start_on_port(int port) {
     int sockfd; 
+    char packet_buffer[buf_size];
     
     struct sockaddr_in servaddr, cliaddr; 
        
@@ -78,8 +78,9 @@ void start_on_port(int port) {
        
     // Filling server information 
     servaddr.sin_family    = AF_INET; // IPv4 
-    servaddr.sin_addr.s_addr = INADDR_ANY; 
-    servaddr.sin_port = htons(RELAY_PORT); 
+    //servaddr.sin_addr.s_addr = INADDR_ANY; 
+    servaddr.sin_addr.s_addr = inet_addr("127.0.0.2");
+    servaddr.sin_port = htons(port); 
        
     // Bind the socket with the server address 
     if ( bind(sockfd, (const struct sockaddr *)&servaddr,  
@@ -92,9 +93,7 @@ void start_on_port(int port) {
     socklen_t len;
     int n; 
 
-    std::cout << "Listening on port " << port << std::endl;
-    //multithread shouldnt be a need...yet
-
+    //std::cout << "Listening on port " << port << std::endl;
     while(true) {
         len = sizeof(cliaddr);
 
@@ -105,7 +104,6 @@ void start_on_port(int port) {
         
         //TODO: add authentication for client
 
-        
         //add to list of peers
         bool can_bind = add_peer(cliaddr.sin_port, cliaddr);
 
@@ -116,6 +114,11 @@ void start_on_port(int port) {
                 packet_buffer[0] = 0x55;
             else
                 packet_buffer[0] = 0xff;
+        }
+        if(!can_bind && port == cliaddr.sin_port) {
+            //echo back to the client
+            sendto(sockfd, &packet_buffer, n, 0, (sockaddr*)&cliaddr, sizeof(cliaddr));
+            continue;
         }
 
         //find requested peer
@@ -131,8 +134,9 @@ void start_on_port(int port) {
 
 
 int main() {
-    for(int i = RELAY_PORT; i < RELAYS_SIZE; i++) {
-        std::thread t(start_on_port, i);
+    std::vector<std::thread> threads;
+    for(int i = RELAY_PORT; i < RELAY_PORT + RELAYS_SIZE; i++) {
+        threads.emplace_back(start_on_port, i);
     }
     //now just hang i guess?
     while(true) { sleep(10); }
