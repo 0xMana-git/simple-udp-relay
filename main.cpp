@@ -115,8 +115,8 @@ void start_on_port(int port) {
             //success = 55, fail = ff
             if(can_bind)
                 packet_buffer[0] = 0x55;
-            else
-                packet_buffer[0] = 0xff;
+            //else
+            //    packet_buffer[0] = 0xff;
             //echo back to the client
             sendto(sockfd, &packet_buffer, n, 0, (sockaddr*)&cliaddr, sizeof(cliaddr));
             //sockaddr should equal cliaddr here
