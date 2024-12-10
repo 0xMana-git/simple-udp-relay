@@ -124,13 +124,13 @@ void start_on_port(int port) {
                 
         }
         
-
+        std::cout << "Forwarding from " << client_port << " to " << port << std::endl;
         //find requested peer
         const sockaddr_in* send_addr = find_peer(port);
         //drop if didnt find peer
         if(send_addr == nullptr)
             continue;
-
+        std::cout << "Peer info of " << port << " found. Forwarding.\n";
 
         int sent_n = sendto(sockfd, &packet_buffer, n, 0, (sockaddr*)send_addr, sizeof(*send_addr));
     }    
