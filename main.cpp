@@ -108,7 +108,8 @@ void start_on_port(int port) {
         bool can_bind = false;
         bool attempting_bind = (port == cliaddr.sin_port);
         if(attempting_bind) 
-            can_bind = add_peer(cliaddr.sin_port, cliaddr);
+            //biggest networking pitfall
+            can_bind = add_peer(nstoh(cliaddr.sin_port), cliaddr);
         if(can_bind)
             std::cout << "New client " << sockaddr_to_hostport(cliaddr) << " bound to " << port << std::endl;
 
@@ -119,12 +120,13 @@ void start_on_port(int port) {
                 packet_buffer[0] = 0x55;
             else
                 packet_buffer[0] = 0xff;
-        }
-        if(!can_bind && attempting_bind) {
             //echo back to the client
             sendto(sockfd, &packet_buffer, n, 0, (sockaddr*)&cliaddr, sizeof(cliaddr));
+            //sockaddr should equal cliaddr here
             continue;
+                
         }
+        
 
         //find requested peer
         const sockaddr_in* send_addr = find_peer(port);
