@@ -100,16 +100,17 @@ void start_on_port(int port) {
         n = recvfrom(sockfd, &packet_buffer, buf_size,  
                     0, ( struct sockaddr *) &cliaddr, 
                     &len); 
-
+        //biggest networking pitfall
+        int client_port = ntohs(cliaddr.sin_port);
         
         //TODO: add authentication for client
 
         //add to list of peers
         bool can_bind = false;
-        bool attempting_bind = (port == cliaddr.sin_port);
+        bool attempting_bind = (port == client_port);
         if(attempting_bind) 
-            //biggest networking pitfall
-            can_bind = add_peer(nstoh(cliaddr.sin_port), cliaddr);
+            
+            can_bind = add_peer(client_port, cliaddr);
         if(can_bind)
             std::cout << "New client " << sockaddr_to_hostport(cliaddr) << " bound to " << port << std::endl;
 
