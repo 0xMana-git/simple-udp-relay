@@ -20,6 +20,7 @@ constexpr size_t buf_size = 65536;
 //udp port
 constexpr int RELAY_PORT = 18720;
 constexpr int RELAYS_SIZE = 32;
+const inline static byte magic[8] = { 0x4d, 0x61, 0x6e, 0x61, 0x13, 0x37, 0x42, 0x69 };
 
 std::string addr_to_string(const in_addr& addr) {
     char client_str[128];
@@ -103,7 +104,15 @@ void start_on_port(int port) {
 
         //add to list of peers
         bool can_bind = false;
-        bool attempting_bind = (port == client_port);
+        bool attempting_bind = false;
+        if(client_port == port) {
+            if(n >= 8) {
+                //0: equal
+                if(memcmp(&packet_buffer, &magic, 8) == 0) {
+                    attempting_bind = true;
+                }
+            }
+        }
         if(attempting_bind) 
             can_bind = add_peer(client_port, cliaddr);
         
