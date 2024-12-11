@@ -28,7 +28,7 @@ def test_port(port : int) -> socket.socket:
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
     sock.bind((f"127.0.{random.randint(0,255)}.3", reverse_endianness(port)))
-    sock.sendto(b"\x00", (RELAY_HOST, port))
+    sock.sendto(b"\x4d\x61\x6e\x61\x13\x37\x42\x69", (RELAY_HOST, port))
     data = sock.recvfrom(1)
     print(data)
     if data[0] != b"\x55":
