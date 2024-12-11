@@ -25,21 +25,26 @@ def recv_loop(s : socket.socket):
 
 
 def test_port(port : int) -> socket.socket:
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-    sock.bind((f"127.0.{random.randint(0,255)}.3", reverse_endianness(port)))
-    sock.sendto(b"\x4d\x61\x6e\x61\x13\x37\x42\x69", (RELAY_HOST, port))
-    data = sock.recvfrom(1)
-    print(data)
-    if data[0] != b"\x55":
-        sock.close()
+    global RELAY_HOST
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        sock.bind((f"0.0.0.0", reverse_endianness(port)))
+        sock.sendto(b"\x4d\x61\x6e\x61\x13\x37\x42\x69", (RELAY_HOST, port))
+        data = sock.recvfrom(8)
+        print(data)
+        if data[0] != b"\x55":
+            sock.close()
+            return None
+        return sock
+    except:
         return None
-    return sock
 def main():
     cur_port = RELAY_PORT_START
     while True:
         sock = test_port(cur_port)
         if sock == None:
+            print(f"{cur_port} Is invalid")
             cur_port += 1
             continue
         break
