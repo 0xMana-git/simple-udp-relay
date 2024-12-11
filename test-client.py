@@ -29,11 +29,12 @@ def test_port(port : int) -> socket.socket:
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-        sock.bind((f"0.0.0.0", reverse_endianness(port)))
+        sock.bind((f"0.0.0.0", port))
         sock.sendto(b"\x4d\x61\x6e\x61\x13\x37\x42\x69", (RELAY_HOST, port))
+        print("waiting for response...")
         data = sock.recvfrom(8)
         print(data)
-        if data[0] != b"\x55":
+        if data[0][0] != 0x55:
             sock.close()
             return None
         return sock
